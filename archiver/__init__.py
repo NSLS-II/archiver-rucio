@@ -21,12 +21,12 @@ class Archiver():
         if suitcase_class not in archivable:
             raise TypeError(f"suitcase_class not in {archivable}")
 
-        rucio_init()
+        self.rucio_init()
 
         self._suitcase = suitcase_class(directory, file_prefix=file_prefix, **kwargs)
         self._directory = directory
         self._file_prefix = file_prefix
-        self._filename = None
+        self._filenames = None
 
     def __call__(self, name, doc):
         self._suitcase(name, doc)
@@ -44,14 +44,16 @@ class Archiver():
         params = {'scheme': 'file', 'prefix': prefix, 'impl': 'rucio.rse.protocols.posix.Default',
                   'third_party_copy': 1, 'domains': {"lan": {"read": 1,"write": 1,"delete": 1},
                                                      "wan": {"read": 1,"write": 1,"delete": 1}}}
-        rseclient = RSEClient()
+        self.rseclient = RSEClient()
         result = rseclient.add_protocol(rse_name, params) # p is true on success
 
     def rucio_register(self):
-        item = [{'path': os.path.join(self._directory, self._filename),
-                 'rse': 'RUCIOTEST',
-                 'did_scope': 'nsls2', 'force_scheme': 'file',
-                 'pfn': 'file:///home/msnyder/data/' + self._filename}]
+        items = []
+        for file in self._filenames:
+            items.append([{'path': os.path.join(self._directory, self._filename),
+                           'rse': 'RUCIOTEST',
+                           'did_scope': 'nsls2', 'force_scheme': 'file',
+                           'pfn': 'file:///home/msnyder/data/' + self._filename}])
 
-        uploadclient = UploadClient()
-        result = uploadclient.upload(items = item)
+        self.uploadclient = UploadClient()
+        result = self.uploadclient.upload(items = items)
