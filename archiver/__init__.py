@@ -16,7 +16,7 @@ class Archiver():
     Serialize bluesky documents and register them with Rucio.
     """
     def __init__(self, suitcase_class=suitcase.msgpack.Serializer,
-                 root='/home/vagrant/globus', file_prefix='{start[uid]}',
+                 directory='/home/vagrant/globus', file_prefix='{start[uid]}',
                  rse='BLUESKY', scope='bluesky-nsls2',
                  pfn='globus:///~/globus/', **kwargs):
 
@@ -25,8 +25,8 @@ class Archiver():
         if suitcase_class not in archivable:
             raise TypeError(f"suitcase_class not in {archivable}")
 
-        self._suitcase = suitcase_class(root, file_prefix=file_prefix, **kwargs)
-        self._root = root
+        self._suitcase = suitcase_class(directory, file_prefix=file_prefix, **kwargs)
+        self._directory = directory
         self._file_prefix = file_prefix
         self._filenames = []
 
@@ -47,19 +47,20 @@ class Archiver():
     def rucio_register(self):
         files = []
         dids = []
+        rse = 'BLUESKY'
         dataset_scope = 'bluesky-nsls2'
         dataset_name = 'archive'
 
         for filename in self._filenames:
-            file = op.path.join(self._root, filename)
+            file = os.path.join(self._directory, filename)
             size = os.stat(file).st_size
             adler = adler32(file)
             files.append({'scope': self.scope, 'name': filename,
                           'bytes': size, 'adler32': adler,
                           'pfn': self.pfn + filename})
         
-	#replica_client = ReplicaClient()
-        #replica_client.add_replicas(rse=rse, files=files)
+        replica_client = ReplicaClient()
+        replica_client.add_replicas(rse=rse, files=files)
         didclient = DIDClient()
         didclient.add_files_to_dataset(dataset_scope, dataset_name, files)
 	
