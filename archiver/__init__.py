@@ -17,7 +17,7 @@ class Archiver():
     """
     def __init__(self, suitcase_class=suitcase.msgpack.Serializer,
                  directory='/home/vagrant/globus', file_prefix='{start[uid]}',
-                 rse='BLUESKY', scope='bluesky-nsls2',
+                 rse='BLUESKY', scope='bluesky-nsls2', dataset='archive',
                  pfn='globus:///~/globus/', **kwargs):
 
         archivable = (suitcase.jsonl.Serializer, suitcase.msgpack.Serializer)
@@ -32,6 +32,7 @@ class Archiver():
 
         self.rse = rse
         self.scope = scope
+        self.dataset = dataset
         self.pfn = pfn
 
     def __call__(self, name, doc):
@@ -47,9 +48,6 @@ class Archiver():
     def rucio_register(self):
         files = []
         dids = []
-        rse = 'BLUESKY'
-        dataset_scope = 'bluesky-nsls2'
-        dataset_name = 'archive'
 
         for filename in self._filenames:
             file = os.path.join(self._directory, filename)
@@ -60,12 +58,6 @@ class Archiver():
                           'pfn': self.pfn + filename})
         
         replica_client = ReplicaClient()
-        replica_client.add_replicas(rse=rse, files=files)
+        replica_client.add_replicas(rse=self.rse, files=files)
         didclient = DIDClient()
-        didclient.add_files_to_dataset(dataset_scope, dataset_name, files)
-	
-	#for file in files:
-	#	did = {'scope': file['scope'], 'name': file['name']}
-	#	dids.append(did)
-	#didclient = DIDClient()
-	#didclient.attach_dids(scope = dataset_scope, name = dataset_name, dids = dids)
+        didclient.add_files_to_dataset(self.scope, self.dataset, files)
