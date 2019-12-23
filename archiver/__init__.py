@@ -26,9 +26,6 @@ class Archiver():
             raise TypeError(f"suitcase_class not in {archivable}")
 
         self._suitcase = suitcase_class(directory, file_prefix=file_prefix, **kwargs)
-        self._directory = directory
-        self._file_prefix = file_prefix
-        self._filenames = []
 
         self.rse = rse
         self.scope = scope
@@ -37,25 +34,22 @@ class Archiver():
 
     def __call__(self, name, doc):
         self._suitcase(name, doc)
-        if name == 'start':
-            self._filenames.append(f"{self._file_prefix.format(start=doc)}.msgpack")
-        #if name == 'resource':
-        #    #TODO: capture the image files that are created.
-        #    ...
         if name == 'stop':
-            self.rucio_register()
+            filenames = []
+            for files in self._suitcase.artifacts.values():
+                filenames.extend(files)
+            self.rucio_register(filenames)
 
-    def rucio_register(self):
+    def rucio_register(self, filenames):
         files = []
         dids = []
 
-        for filename in self._filenames:
-            file = os.path.join(self._directory, filename)
-            size = os.stat(file).st_size
-            adler = adler32(file)
-            files.append({'scope': self.scope, 'name': filename,
+        for filename in filenames:
+            size = os.stat(str(filename)).st_size
+            adler = adler32(str(filename))
+            files.append({'scope': self.scope, 'name': str(filename.parts[-1]),
                           'bytes': size, 'adler32': adler,
-                          'pfn': self.pfn + filename})
+                          'pfn': self.pfn + str(filename.parts[-1])})
         
         replica_client = ReplicaClient()
         replica_client.add_replicas(rse=self.rse, files=files)
