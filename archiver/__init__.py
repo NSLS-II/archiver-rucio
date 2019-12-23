@@ -73,8 +73,7 @@ class Archiver():
     dataset: string, optional
         The Rucio dataset. Rucio files are grouped into datasets.
     pfn: string, optional
-        
-  
+        Physical gile name
     """
 def __init__(self, suitcase_class=suitcase.msgpack.Serializer,
                  filler_class=event_model.Filler, root_map=None, handler_registry=None,    
