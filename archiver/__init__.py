@@ -15,7 +15,7 @@ del get_versions
 
 class Archiver():
     """
-    Serialize bluesky documents and register them with Rucio.
+    Serialize filled Bluesky documents and register them with Rucio.
 
     suitcase_class: type, optional
         This is a msgpack Serializer by default. This will determine the
@@ -73,7 +73,7 @@ class Archiver():
     dataset: string, optional
         The Rucio dataset. Rucio files are grouped into datasets.
     pfn: string, optional
-        Physical gile name
+        Physical file name
     """
     def __init__(self, suitcase_class=suitcase.msgpack.Serializer,
                  filler_class=event_model.Filler, root_map=None, handler_registry=None,    
