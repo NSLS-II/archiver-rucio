@@ -75,7 +75,7 @@ class Archiver():
     pfn: string, optional
         Physical gile name
     """
-def __init__(self, suitcase_class=suitcase.msgpack.Serializer,
+    def __init__(self, suitcase_class=suitcase.msgpack.Serializer,
                  filler_class=event_model.Filler, root_map=None, handler_registry=None,    
                  directory='/home/vagrant/globus', file_prefix='{start[uid]}',
                  rse='BLUESKY', scope='bluesky-nsls2', dataset='archive',
@@ -100,7 +100,7 @@ def __init__(self, suitcase_class=suitcase.msgpack.Serializer,
         self.pfn = pfn
 
     def __call__(self, name, doc):
-        self._suitcase(name, doc)
+        self._suitcase(*self._filler(name, doc))
         if name == 'stop':
             filenames = []
             for files in self._suitcase.artifacts.values():

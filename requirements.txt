@@ -1,2 +1,3 @@
 # List required packages in this file, one per line.
 rucio-clients
+databroker >=1.0.0b4
